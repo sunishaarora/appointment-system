@@ -25,54 +25,58 @@ public class ApptSystemController {
     }
 
     @PostMapping("/users")
-    public User createUser(@RequestBody User user) {
-        return restTemplate.postForObject("http://localhost:8100/api/v1/users", user, User.class);
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        try{
+            User help = restTemplate.postForObject("http://localhost:8100/api/v1/users", user, User.class);
+            return ResponseEntity.ok(help);
+        } catch (HttpServerErrorException ex){
+            HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
+            String errorMessage = ex.getResponseBodyAsString();
+            return ResponseEntity.status(statusCode).body(errorMessage);
+        }
     }
 
     @DeleteMapping("/deleteUser/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId) {
-        restTemplate.delete("http://localhost:8100/api/v1/deleteUser/{userId}", userId);
-        return null;
+        String url = "http://localhost:8100/api/v1/deleteUser/{userId}";
+        HttpEntity<?> requestEntity = new HttpEntity<>(null);
+        restTemplate.exchange(url, HttpMethod.DELETE, requestEntity, Void.class, userId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/users")
     public ResponseEntity<List<User>> getAllUsers() {
         String url = "http://localhost:8100/api/v1/users";
-        ResponseEntity<List<User>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<List<User>>() {
-        });
+        ResponseEntity<List<User>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<List<User>>() {});
         return responseEntity;
     }
-
-    @PutMapping("/updateUser/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User user) {
-        HttpEntity<User> request = new HttpEntity<>(user);
-        ResponseEntity<User> response = restTemplate.exchange("http://localhost:8100/api/v1/updateUser/" + userId, HttpMethod.PUT, request, User.class);
-        return ResponseEntity.ok(response.getBody());
-    }
-
     @GetMapping("/user/search/{firstName}/{lastName}")
-    public ResponseEntity<List<User>> getUserByName(@PathVariable String firstName, @PathVariable String lastName) {
-        String userMicroserviceUrl = "http://localhost:8100/api/v1/";
-        String searchUserByNameEndpoint = "/user/search/{firstName}/{lastName}";
-        String requestUrl = userMicroserviceUrl + searchUserByNameEndpoint;
-
+    public ResponseEntity<?> getUserByName(@PathVariable String firstName, @PathVariable String lastName) {
+        String url = "http://localhost:8100/api/v1/user/search/{firstName}/{lastName}";
         Map<String, String> uriVariables = new HashMap<>();
-        uriVariables.put("firstName", firstName);
-        uriVariables.put("lastName", lastName);
-
-        ResponseEntity<User[]> responseEntity = restTemplate.getForEntity(
-                requestUrl,
-                User[].class,
-                uriVariables
-        );
-
-        User[] usersArray = responseEntity.getBody();
-        List<User> userList = (usersArray != null) ? Arrays.asList(usersArray) : Collections.emptyList();
-
-        if (userList.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            uriVariables.put("firstName", firstName);
+            uriVariables.put("lastName", lastName);
+        try{
+            ResponseEntity<List<User>> responseEntity = restTemplate.exchange(url, HttpMethod.GET, null, new ParameterizedTypeReference<List<User>>() {}, uriVariables);
+            return responseEntity;
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
+            String errorMessage = ex.getResponseBodyAsString();
+            return ResponseEntity.status(statusCode).body(errorMessage);
         }
-        return ResponseEntity.ok().body(userList);
+
+    }
+    @PutMapping("/updateUser/{userId}")
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody User user) {
+        try {
+            HttpEntity<User> request = new HttpEntity<>(user);
+            ResponseEntity<User> response = restTemplate.exchange("http://localhost:8100/api/v1/updateUser/{userId}", HttpMethod.PUT, request, User.class, userId);
+            return ResponseEntity.ok(response.getBody());
+        } catch (HttpClientErrorException ex) {
+            HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
+            String errorMessage = ex.getResponseBodyAsString();
+            return ResponseEntity.status(statusCode).body(errorMessage);
+        }
     }
 
     @PostMapping("/appts")
