@@ -119,10 +119,11 @@ class ApptSystemControllerTest {
         Appts appt = new Appts();
         when(restTemplate.postForObject("http://localhost:8200/api/v1/appts/add", appt, Appts.class)).thenReturn(appt);
 
-        Appts createdAppt = controller.createAppt(appt);
+        ResponseEntity<?> createdAppt = controller.createAppt(appt);
 
         assertNotNull(createdAppt);
-        assertSame(appt,createdAppt);
+        assertEquals(HttpStatus.OK, createdAppt.getStatusCode());
+        assertSame(appt, createdAppt.getBody());
         verify(restTemplate, times(1)).postForObject("http://localhost:8200/api/v1/appts/add", appt, Appts.class);
     }
 

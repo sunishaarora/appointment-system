@@ -80,15 +80,23 @@ public class ApptSystemController {
     }
 
     @PostMapping("/appts")
-    public Appts createAppt(@RequestBody Appts appt) {
-        return restTemplate.postForObject("http://localhost:8200/api/v1/appts/add", appt, Appts.class);
+    public ResponseEntity<?> createAppt(@RequestBody Appts appt) {
+        try{
+            Appts appts = restTemplate.postForObject("http://localhost:8200/api/v1/appts/add", appt, Appts.class);
+            return ResponseEntity.ok(appts);
+        } catch (HttpClientErrorException ex){
+            HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
+            String errorMessage = ex.getResponseBodyAsString();
+            return ResponseEntity.status(statusCode).body(errorMessage);
+        }
+
     }
 
     @DeleteMapping("/deleteAppt/{id}")
     public ResponseEntity<?> deleteAppt(@PathVariable Long id) {
         try {
             restTemplate.delete("http://localhost:8200/api/v1/appts/delete/{id}", id);
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok().body("Appointment deleted");
         } catch (HttpClientErrorException ex) {
             HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
             String errorMessage = ex.getResponseBodyAsString();
@@ -115,6 +123,10 @@ public class ApptSystemController {
             ResponseEntity<Appts> response = restTemplate.exchange("http://localhost:8200/api/v1/appts/update/{id}", HttpMethod.PUT, request, Appts.class, id);
             return ResponseEntity.ok(response.getBody());
         } catch (HttpServerErrorException ex) {
+            HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
+            String errorMessage = ex.getResponseBodyAsString();
+            return ResponseEntity.status(statusCode).body(errorMessage);
+        } catch (HttpClientErrorException ex) {
             HttpStatus statusCode = (HttpStatus) ex.getStatusCode();
             String errorMessage = ex.getResponseBodyAsString();
             return ResponseEntity.status(statusCode).body(errorMessage);
