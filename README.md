@@ -2,6 +2,9 @@
 
 The Central Appointment Management System interacts with the User and Appointment Microservices to create a unified appointment management solution.
 
+### YouTube Demo
+Watch the project demonstration on YouTube: [Appointment Management System Demo](https://youtu.be/Yy6mHlTzyC8)
+
 ### Requirements
 - Java Development Kit (JDK) 11 or higher
 - MySQL Databases for User and Appointment Microservices
@@ -16,10 +19,7 @@ Before running this central system, make sure the following components are runni
 - [User Microservice](https://github.com/sunishaarora/appointment-system-user) at http://localhost:8100
 - [Appointment Microservice](https://github.com/sunishaarora/appointment-system-appt) at http://localhost:8200
 
-Run the main class `com.perficient.apptsystem.ApptSystemApplication` to start the central system. It will run on port 8080.
-
-### YouTube Demo
-Watch the project demonstration on YouTube: [Appointment Management System Demo](https://youtu.be/Yy6mHlTzyC8)
+Run the main class `com.perficient.apptsystem.ApptSystemApplication` to start the central system. It will run on port 8100.
 
 ### What I Learned
 - Integrating multiple microservices into a centralized system
